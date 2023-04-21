@@ -1,9 +1,180 @@
 ---
 title: Prac for 2023 honours multivariate CCA section
+author: Miguel Rodo, based on Johnson and Wichern (2007) and Little (2022)
 format:
   pdf:
     embed-resources: true
+    include-in-header:
+      - text: |
+          \usepackage{mathpazo}
+          \usepackage{unicode-math}
+          \usepackage{enumitem}
 ---
 
-# Introduction
+```{r}
+#| include: false
+options(knitr.kable.NA = "")
+```
+
+## Question One (8)
+
+Hirschey and Wichern (reference in Johnson and Wichern) investigate the consistency, determinants and uses of accounting and market-value measures of profitability.
+
+The correlation matrix of accounting historical, accounting replacement and market-value measures of profitability for a sample of firms operating in 1977 is as follows:
+
+```{r}
+#| results: asis
+#| echo: false
+var_vec <- c(
+  "Historical return on assets (HRA)",
+  "Historical return on equity (HRE)",
+  "Historical return on sales (HRS)",
+  "Replacement return on assets (RA)",
+  "Replacement return on equity (RRE)",
+  "Replacement return on sales (RRS)",
+  "Market Q ratio (Q)",
+  "Market relative excess value (REV)"
+  )
+hra_vec <- c(1, 0.738, 0.731, 0.828, 0.681, 0.712, 0.625, 0.604)
+hre_vec <- c(NA_real_, 1, 0.52, 0.688, 0.831, 0.543, 0.322, 0.303)
+hrs_vec <- c(NA_real_, NA_real_, 1, 0.652, 0.5113, 0.826, 0.579, 0.617)
+rra_vec <- c(NA_real_, NA_real_, NA_real_, 1, 0.887, 0.867, 0.639, 0.563)
+rre_vec <- c(NA_real_, NA_real_, NA_real_, NA_real_, 1, 0.692, 0.419, 0.352)
+rrs_vec <- c(NA_real_, NA_real_, NA_real_, NA_real_, NA_real_, 1, 0.608, 0.610)
+q_vec <- c(NA_real_, NA_real_, NA_real_, NA_real_, NA_real_, NA_real_, 1, 0.937)
+rev_vec <- c(NA_real_, NA_real_, NA_real_, NA_real_, NA_real_, NA_real_, NA_real_, 1)
+corr_tbl <- tibble::tibble(
+  Variable = var_vec,
+  HRA = hra_vec,
+  HRE = hre_vec,
+  HRS = hrs_vec,
+  RRA = rra_vec,
+  RRE = rre_vec,
+  RRS = rrs_vec,
+  Q = q_vec,
+  REV = rev_vec
+)
+knitr::kable(corr_tbl)
+```
+
+```{r}
+#| eval: false
+#| echo: false
+corr_mat <- matrix(c(
+  HRA = hra_vec,
+  HRE = hre_vec,
+  HRS = hrs_vec,
+  RRA = rra_vec,
+  RRE = rre_vec,
+  RRS = rrs_vec,
+  Q = q_vec,
+  REV = rev_vec
+), nrow = 8, byrow = FALSE)
+for (i in seq_len(nrow(corr_mat))) {
+  for (j in seq_len(nrow(corr_mat))) {
+    if (is.na(corr_mat[i, j])) corr_mat[i, j] <- corr_mat[j, i]
+  }
+}
+```
+
+
+Let $\symbf{X}^{(1)} = \begin{bmatrix} X^{(1)}_1, X^{(1)}_2, \ldots, X^{(1)}_6 \end{bmatrix}$ be the vector of variables representing accounting measures of profitability (HRA to RRS).
+Let $\symbf{X}^{(2)}$ be the vector of variables representing market-value measures of profitability (Q and REV).
+Partition the sample correlation matrix accordingly, and perform a canonical correlation analysis. 
+Specifically, without using anything more than the \texttt{eigen} function in \texttt{R} (e.g. not the \texttt{CCA} package):
+
+\begin{enumerate}[label=\alph*]
+\item Find the estimated coefficient vector for the accounting measures of profitability in the first canonical variate (i.e. find $\hat{\symbf{a}}_1$ in $\hat{U}_1=\hat{\symbf{a}}_1'\symbf{X}^{(1)}$). (2)
+\item  Find $\hat{\symbf{b}}_1$ in $\hat{V}_1=\hat{\symbf{b}}_1'\symbf{X}^{(2)}$ directly using result from part (a). (1)
+\item  Find the first canonical correlation coefficient. (1)
+\item  Interpret these canonical variables using the coefficient vectors. (2)
+\item  Interpret these canonical variables using the correlation matrices $\symbf{\rho}_{U_1, \symbf{X}^{(1)}}$ and $\symbf{\rho}_{V_1, \symbf{X}^{(2)}}$. (3)
+\end{enumerate}
+
+
+
+The correlation matrix can be read into \texttt{R} using the following code:
+
+```{r}
+#| eval: false
+#| echo: true
+corr_mat <- structure(
+  c(
+    1, 0.738, 0.731, 0.828, 0.681, 0.712, 0.625, 0.604, 
+    0.738, 1, 0.52, 0.688, 0.831, 0.543, 0.322, 0.303, 0.731, 0.52, 
+    1, 0.652, 0.5113, 0.826, 0.579, 0.617, 0.828, 0.688, 0.652, 1, 
+    0.887, 0.867, 0.639, 0.563, 0.681, 0.831, 0.5113, 0.887, 1, 0.692, 
+    0.419, 0.352, 0.712, 0.543, 0.826, 0.867, 0.692, 1, 0.608, 0.61, 
+    0.625, 0.322, 0.579, 0.639, 0.419, 0.608, 1, 0.937, 0.604, 0.303, 
+    0.617, 0.563, 0.352, 0.61, 0.937, 1
+    ),
+  dim = c(8L, 8L)
+  )
+```
+
+
+## Question Two
+
+Suppose that we perform CCA on the random vectors $\symbf{X}^{(1)}:2\times 1$ and $\symbf{X}^{(2)}:2\times 1$ where
+
+$$
+\symbf{\Sigma} = \mathrm{Cov} \begin{bmatrix} \begin{pmatrix} \symbf{X}^{(1)} \\ \symbf{X}^{(2)} \end{pmatrix} \end{bmatrix} = 
+\begin{bmatrix}
+100 & 0 & 0 & 0 \\
+0 & 1 & 0.95 & 0 \\
+0 & 0.95 & 1 & 0 \\
+0 & 0 & 0 & 100 
+\end{bmatrix}
+$$
+
+The first pair of canonical variates are given by $U_1 = X_2^{(1)}$ and $V_1 = X_1^{(2)}$.
+
+\begin{enumerate}[label=\alph*]
+
+\item   Despite that $\mathrm{Var}[X^{(1)}_1] > \mathrm{Var}[X^{(1)}_2]$ and $\mathrm{Var}[X^{(2)}_2] > \mathrm{Var}[X^{(1)}_1]$, only $X^{(1)}_2$ and $X^{(2)}_1$ were included in the first canonical variate pair. Why? (1)
+\item   Suppose that the correlation between $X^{(1)}_2$ and $X^{(2)}_1$ is reduced to 0. What is the correlation between the first canonical variables? Why? (2)
+\item   Suppose that the $\mathrm{Var}[X^{(1)}_2]$ and $\mathrm{Var}[X^{(2)}_1]$ are each doubled. What happens to the first canonical correlation?  Why? (2) \begin{enumerate}[label=\alph*]
+  \item Bonus: How are the lengths of the first canonical coefficient vectors affected, i.e. do they decrease, increase or stay the same? Why? (2) (note that question three would help here)
+\end{enumerate}
+
+\end{enumerate}
+
+In parts c-d, you do not need to demonstrate your claim using R code or provide a "proof".
+Just describe why it makes sense.
+If you want to give an R demonstration or a formal proof, you can!
+Note that R code does not address "why".
+
+Without even attempting to answer why, you may well not get any marks for giving an answer as it could just be a random guess or copying.
+A bad explanation does not look like copying, for the same reason that
+"All happy families are alike; each unhappy family is unhappy in its own way" (Dostoyevsky).
+
+## Question Three (2)
+
+For random vectors $\symbf{X}^{(1)}$ and $\symbf{X}^{(2)}$, the first canonical coefficient vectors $\symbf{a}$, $\symbf{b}$ maximise
+
+$$
+\mathrm{Cor}(\symbf{a}'\symbf{X}^{(1)}, \symbf{b}' \symbf{X}^{(2)}) = 
+\symbf{a}'\symbf{\rho}_{12}\symbf{b}
+$$
+
+where $\symbf{\rho}_{12}$ is the correlation matrix between $\symbf{X}^{(1)}$ and $\symbf{X}^{(2)}$.
+
+Suppose that we created standardised variables  $\symbf{Z}^{(1)}=\symbf{V}_{11}^{-1}\symbf{X}^{(1)}$ and $\symbf{Z}^{(2)}=\symbf{V}_{22}^{-1}\symbf{X}^{(2)}$, where $\symbf{V}_{ii}$ is the matrix of diagonal elements of the covariance matrix for $\symbf{X}^{(i)}$.
+The corresponding first canonical coefficient vectors $\symbf{a}^z$, $\symbf{b}^z$ maximise exactly the same function:
+
+$$
+\mathrm{Cor}(\symbf{a}^{z\prime} \symbf{X}^{(1)}, \symbf{b}^{z\prime} \symbf{X}^{(2)}) = 
+\symbf{a}^{z\prime}\symbf{\rho}^z_{12}\symbf{b}^z
+= 
+\symbf{a}^{z\prime}\symbf{\rho}_{12}\symbf{b}^z,
+$$
+
+since the correlation matrix is identical for standardised variables ($\symbf{\rho}^z_{12}$) as
+unstandardised variables ($\symbf{\rho}_{12}$).
+
+However, the coefficient vectors are not in general the same, as $\symbf{a}^z = \symbf{V}_{11}\symbf{a}$ and $\symbf{b}^z = \symbf{V}_{22}\symbf{b}$.
+
+Why?
+
+\emph{Hint}: The underlying reason is on the slide titled "Properties of canonical variates".
 
