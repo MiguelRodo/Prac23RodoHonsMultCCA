@@ -1,6 +1,6 @@
 Package: Prac23RodoHonsMultCCA
 Title: Prac for 2023 honours multivariate CCA section
-Version: 0.0.2
+Version: 1.0.0
 Authors@R: person("Miguel", "Rodo", , "miguel.rodo@uct.ac.za", role = c("aut",
          "cre"))
 Maintainer: Miguel Rodo <miguel.rodo@uct.ac.za>
