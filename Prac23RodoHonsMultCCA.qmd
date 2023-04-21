@@ -1,0 +1,9 @@
+---
+title: Prac for 2023 honours multivariate CCA section
+format:
+  pdf:
+    embed-resources: true
+---
+
+# Introduction
+
