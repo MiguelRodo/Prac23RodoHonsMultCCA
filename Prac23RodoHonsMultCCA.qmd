@@ -16,7 +16,7 @@ format:
 options(knitr.kable.NA = "")
 ```
 
-## Question One (8)
+## Question One (9)
 
 Hirschey and Wichern (reference in Johnson and Wichern) investigate the consistency, determinants and uses of accounting and market-value measures of profitability.
 
@@ -113,7 +113,7 @@ corr_mat <- structure(
 ```
 
 
-## Question Two
+## Question Two (5)
 
 Suppose that we perform CCA on the random vectors $\symbf{X}^{(1)}:2\times 1$ and $\symbf{X}^{(2)}:2\times 1$ where
 
